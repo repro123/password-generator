@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  /* font family */
+  --font-jetbrains-mono: "JetBrains Mono", sans-serif;
+
+  /* colors */
+  --color-brand-error: #f64a4a;
+  --color-brand-orange: #fb7c58;
+  --color-brand-warning: #f8cd65;
+  --color-brand-success: #a4ffaf;
+
+  --color-grey-200: #e6e5ea;
+  --color-grey-600: #817d92;
+  --color-grey-700: #54535b;
+  --color-grey-800: #24232c;
+  --color-grey-850: #18171f;
+  --color-grey-900: #14131b;
+  --color-grey-950: #08070b;
+}
+
+@utility preset-1 {
+  font-size: 2rem;
+  line-height: 42px;
+}
+@utility preset-2 {
+  font-size: 1.5rem;
+  line-height: 32px;
+}
+@utility preset-3 {
+  font-size: 1.125rem;
+  line-height: 24px;
+}
+@utility preset-4 {
+  font-size: 1rem;
+  line-height: 20px;
+}
