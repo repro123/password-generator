@@ -35,3 +35,70 @@
   font-size: 1rem;
   line-height: 20px;
 }
+
+input[type="range"] {
+  -webkit-appearance: none; /* Chrome, Safari, Edge */
+  appearance: none;
+  background: transparent; /* Remove default grey background */
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type="range"]:focus {
+  /* outline: none; Remove default focus ring if desired */
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type="range"]::-webkit-slider-runnable-track {
+  /* background: black; */
+  background: linear-gradient(
+    to right,
+    var(--color-brand-success) var(--progress, 0%),
+    black var(--progress, 0%)
+  );
+  height: 0.3rem;
+  transition: background 0.15s ease-out;
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-track {
+  background: black;
+  height: 0.3rem;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Essential for Webkit */
+  appearance: none;
+  margin-top: -5.6px; /* Centers thumb on the track (height/2 - track_height/2) */
+  background-color: var(--color-grey-200);
+  height: 1rem;
+  width: 1rem;
+  border-radius: 50%;
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-thumb {
+  border: none; /* Removes extra border in Firefox */
+  border-radius: 50%;
+  background-color: var(--color-grey-200);
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Chrome, Safari, Edge */
+input[type="range"]:active::-webkit-slider-thumb {
+  border: 2px solid var(--color-brand-success);
+  background-color: black;
+}
+
+/* Firefox */
+input[type="range"]:active::-moz-range-thumb {
+  border: 2px solid var(--color-brand-success);
+  background-color: black;
+}
+
+input[type="range"]::-moz-range-progress {
+  background: var(--color-brand-success);
+  height: 0.5rem;
+}
