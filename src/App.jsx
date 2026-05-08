@@ -1,19 +1,18 @@
 import Heading from "@/components/Heading";
 import Range from "@/components/Range";
 import CharacterLength from "@/components/CharacterLength";
+import CharacterOptions from "@/components/CharacterOptions";
+import StrengthDisplay from "@/components/StrengthDisplay";
+import SubmitButton from "@/components/SubmitButton";
+
 import CopyButton from "@/ui/CopyButton";
 import RightArrow from "@/ui/RightArrow";
-import { useReducer } from "react";
 
-const characterOptions = [
-  {
-    label: "Include Uppercase Letters",
-    actionType: "includeUppercase",
-  },
-  { label: "Include Lowercase Letters", actionType: "includeLowercase" },
-  { label: "Include Numbers", actionType: "includeNumbers" },
-  { label: "Include Symbols", actionType: "includeSymbols" },
-];
+import { calculateStrengthValue } from "@/utils/calculateStrengthValue";
+import { getStrengthText } from "@/utils/getStrengthText";
+import { getStrengthBars } from "@/utils/getStrengthBars";
+import { setBarsBackground } from "@/utils/setBarsBackground";
+import { useReducer } from "react";
 
 const initialState = {
   isCopied: false,
@@ -22,6 +21,8 @@ const initialState = {
   includeLowercase: false,
   includeNumbers: false,
   includeSymbols: false,
+  password: "",
+  errorMessage: "",
 };
 
 function reducer(state, action) {
@@ -47,6 +48,25 @@ function reducer(state, action) {
     case "includeSymbols":
       return { ...state, includeSymbols: !state.includeSymbols };
 
+    case "noCharacter":
+      return { ...state, errorMessage: "Character length must be above 0" };
+
+    case "notEnoughCharacters":
+      return {
+        ...state,
+        errorMessage:
+          "Character length must not be less than the selected password options",
+      };
+
+    case "clearError":
+      return {
+        ...state,
+        errorMessage: "",
+      };
+
+    case "generatePassword":
+      return { ...state, password: action.payload };
+
     default:
       throw new Error("Unknown type");
   }
@@ -61,7 +81,16 @@ function App() {
     includeLowercase,
     includeNumbers,
     includeSymbols,
+    password,
+    errorMessage,
   } = state;
+
+  const selectedOptionsCount = [
+    includeUppercase,
+    includeLowercase,
+    includeNumbers,
+    includeSymbols,
+  ].filter(Boolean).length;
 
   async function setClipboard(text) {
     dispatch({ type: "copy" });
@@ -78,54 +107,67 @@ function App() {
     dispatch({ type: "changeLength", payload: actualValue });
   }
 
-  function calculateStrengthValue() {
-    let calculatedStrength = 0;
-
-    if (characterLength > 0) {
-      if (characterLength < 4) {
-        calculatedStrength += 1;
-      } else if (characterLength < 8) {
-        calculatedStrength += 2;
-      } else {
-        calculatedStrength += 3;
-      }
-    }
-
-    const selectedOptionsCount = [
-      includeUppercase,
-      includeLowercase,
-      includeNumbers,
-      includeSymbols,
-    ].filter(Boolean).length;
-
-    const effectiveOptions = Math.min(selectedOptionsCount, characterLength);
-
-    calculatedStrength += effectiveOptions;
-
-    return calculatedStrength;
+  function randomIndex(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  function getStrengthText() {
-    const value = calculateStrengthValue();
+  function generatePassword() {
+    const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercase = "abcdefghijklmnopqrstuvwxyz";
+    const numbers = "1234567890";
+    const symbols = "~`!@#$%^&*()_-+={[}]|\"';:?/>.<,";
 
-    if (!value) return;
+    const selectedGroups = [];
 
-    let text;
+    if (includeUppercase) selectedGroups.push(uppercase);
+    if (includeLowercase) selectedGroups.push(lowercase);
+    if (includeNumbers) selectedGroups.push(numbers);
+    if (includeSymbols) selectedGroups.push(symbols);
 
-    if (value < 2) {
-      text = "very weak";
-    } else if (value < 4) {
-      text = "weak";
-    } else if (value < 6) {
-      text = "medium";
-    } else {
-      text = "strong";
+    let passwordArray;
+
+    passwordArray = selectedGroups.map((group) => randomIndex(group));
+
+    let allChars = selectedGroups.join("");
+
+    const remainingLength = characterLength - passwordArray.length;
+
+    for (let i = 0; i < remainingLength; i++) {
+      passwordArray.push(randomIndex(allChars));
     }
 
-    return text;
+    passwordArray = passwordArray.sort(() => Math.random() - 0.5);
+
+    return passwordArray.join("");
+  }
+  const randomPassword = generatePassword();
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!characterLength) {
+      dispatch({ type: "noCharacter" });
+      setTimeout(() => {
+        dispatch({ type: "clearError" });
+      }, 3000);
+      return;
+    }
+
+    if (characterLength < selectedOptionsCount) {
+      dispatch({ type: "notEnoughCharacters" });
+      setTimeout(() => {
+        dispatch({ type: "clearError" });
+      }, 3000);
+      return;
+    }
+
+    dispatch({ type: "generatePassword", payload: randomPassword });
   }
 
-  const strength = getStrengthText();
+  const value = calculateStrengthValue(characterLength, selectedOptionsCount);
+  const strength = getStrengthText(value);
+  const bars = getStrengthBars(value);
+  const bg = setBarsBackground(bars);
 
   return (
     <div className=" w-full max-w-3xl mx-auto">
@@ -138,13 +180,13 @@ function App() {
             type="text"
             readOnly
             placeholder="P4$5W0rD!"
-            value=""
+            value={password}
           />
           <div className="flex gap-2 items-center text-brand-success">
             {isCopied && <span className="preset-4 lg:preset-3">COPIED</span>}
             <CopyButton
               className="text-brand-success cursor-pointer hover:text-white"
-              onCopy={() => setClipboard("Empty")}
+              onCopy={() => setClipboard(password)}
             />
           </div>
         </div>
@@ -158,44 +200,21 @@ function App() {
             />
           </div>
 
-          <div className="grid gap-4">
-            {characterOptions.map((option) => (
-              <label
-                key={option.label}
-                className="flex items-center gap-4 w-fit cursor-pointer has-disabled:cursor-not-allowed has-disabled:opacity-20"
-              >
-                <input
-                  type="checkbox"
-                  disabled={!characterLength}
-                  className="accent-brand-success cursor-pointer disabled:cursor-not-allowed"
-                  onChange={() => dispatch({ type: option.actionType })}
-                />{" "}
-                <span>{option.label}</span>
-              </label>
-            ))}
-          </div>
+          <CharacterOptions
+            dispatch={dispatch}
+            characterLength={characterLength}
+          />
 
-          <div className="bg-grey-850 px-8 py-4 flex items-center justify-between gap-4">
-            <p className="uppercase preset-4 md:preset-3 text-grey-600">
-              strength
-            </p>
+          <StrengthDisplay strength={strength} bars={bars} bg={bg} />
 
-            <div>
-              {strength && (
-                <span className="preset-3 md:preset-2 text-grey-200 uppercase">
-                  {strength}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={!characterLength}
-            className="bg-brand-success text-black flex items-center text-center justify-center gap-2 border border-brand-success not-disabled:hover:text-brand-success not-disabled:hover:bg-black cursor-pointer px-4 py-3 transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-50 "
+          <SubmitButton
+            characterLength={characterLength}
+            onGenerate={(e) => handleSubmit(e)}
           >
             Generate <RightArrow />
-          </button>
+          </SubmitButton>
+
+          <p className="text-sm text-brand-error mb-4">{errorMessage}</p>
         </div>
       </form>
     </div>
