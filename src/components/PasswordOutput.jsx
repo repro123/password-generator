@@ -15,13 +15,15 @@ function PasswordOutput({ password, isCopied, onCopy }) {
           placeholder="P4$5W0rD!"
           value={password}
         />
-        <button
-          type="button"
-          className="text-brand-success cursor-pointer"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? <Eye /> : <EyeOff />}
-        </button>
+        {password && (
+          <button
+            type="button"
+            className="text-brand-success cursor-pointer"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <Eye /> : <EyeOff />}
+          </button>
+        )}
       </div>
       <div className="flex gap-2 items-center text-brand-success">
         {isCopied && <span className="preset-4 lg:preset-3">COPIED</span>}

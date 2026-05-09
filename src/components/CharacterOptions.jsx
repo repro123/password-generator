@@ -1,6 +1,20 @@
 import { characterOptions } from "@/data/characterOptions";
 
-function CharacterOptions({ dispatch, characterLength }) {
+function CharacterOptions({
+  dispatch,
+  characterLength,
+  includeUppercase,
+  includeLowercase,
+  includeNumbers,
+  includeSymbols,
+}) {
+  const checkedValues = {
+    includeUppercase,
+    includeLowercase,
+    includeNumbers,
+    includeSymbols,
+  };
+
   return (
     <div className="grid gap-4">
       {characterOptions.map((option) => (
@@ -13,6 +27,7 @@ function CharacterOptions({ dispatch, characterLength }) {
             disabled={!characterLength}
             className="accent-brand-success cursor-pointer disabled:cursor-not-allowed"
             onChange={() => dispatch({ type: option.actionType })}
+            checked={checkedValues[option.actionType]}
           />{" "}
           <span>{option.label}</span>
         </label>

@@ -9,7 +9,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function PasswordHistoryModal({ history, onDelete }) {
+export function PasswordHistoryModal({
+  history,
+  onDelete,
+  onGenerateSimilar,
+  onDeleteAll,
+}) {
   return (
     <Dialog>
       <DialogTrigger
@@ -23,7 +28,7 @@ export function PasswordHistoryModal({ history, onDelete }) {
         }
       />
       <DialogContent
-        className="bg-grey-900  sm:max-w-3xl"
+        className="bg-grey-900 border border-brand-success sm:max-w-3xl"
         showCloseButton={false}
       >
         <DialogHeader className="border-b border-b-white pb-4">
@@ -48,7 +53,12 @@ export function PasswordHistoryModal({ history, onDelete }) {
           tabIndex={0}
           className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4 text-white"
         >
-          <PasswordHistoryTable history={history} onDelete={onDelete} />
+          <PasswordHistoryTable
+            history={history}
+            onDelete={onDelete}
+            onGenerateSimilar={onGenerateSimilar}
+            onDeleteAll={onDeleteAll}
+          />
         </div>
       </DialogContent>
     </Dialog>

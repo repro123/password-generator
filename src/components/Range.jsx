@@ -1,6 +1,11 @@
 function Range({ characterLength, handleRange }) {
+  const percent = (characterLength / 50) * 100;
+
   return (
     <input
+      style={{
+        "--progress": `${percent}%`,
+      }}
       type="range"
       name=""
       id=""
