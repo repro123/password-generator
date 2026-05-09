@@ -14,7 +14,7 @@ import { getStrengthBars } from "@/utils/getStrengthBars";
 import { setBarsBackground } from "@/utils/setBarsBackground";
 import { randomIndex } from "@/utils/randomIndex";
 
-import { useReducer } from "react";
+import { useReducer, useEffect } from "react";
 
 const initialState = {
   isCopied: false,
@@ -86,6 +86,12 @@ function reducer(state, action) {
       return { ...state, password: action.payload, history: updatedHistory };
     }
 
+    case "updateHistory":
+      return {
+        ...state,
+        history: action.payload,
+      };
+
     default:
       throw new Error("Unknown type");
   }
@@ -105,7 +111,9 @@ function App() {
     history,
   } = state;
 
-  console.log("HISTORY", history);
+  useEffect(() => {
+    localStorage.setItem("history", JSON.stringify(history));
+  }, [history]);
 
   const selectedOptionsCount = [
     includeUppercase,
@@ -186,6 +194,17 @@ function App() {
     });
   }
 
+  function handleDelete(createdAt) {
+    const updatedHistory = history.filter(
+      (item) => item.createdAt !== createdAt,
+    );
+
+    dispatch({
+      type: "updateHistory",
+      payload: updatedHistory,
+    });
+  }
+
   const value = calculateStrengthValue(characterLength, selectedOptionsCount);
   const strength = getStrengthText(value);
   const bars = getStrengthBars(value);
@@ -193,7 +212,7 @@ function App() {
 
   return (
     <div className=" w-full max-w-3xl mx-auto">
-      <Heading />
+      <Heading history={history} onDelete={handleDelete} />
 
       <form className="mt-4 ">
         <PasswordOutput

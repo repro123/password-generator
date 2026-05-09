@@ -195,4 +195,9 @@ input[type="range"]::-moz-range-progress {
   * {
     @apply outline-ring/50;
   }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
