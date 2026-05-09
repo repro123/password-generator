@@ -17,7 +17,7 @@ function PasswordOutput({ password, isCopied, onCopy }) {
         />
         <button
           type="button"
-          className="text-brand-success"
+          className="text-brand-success cursor-pointer"
           onClick={() => setShowPassword(!showPassword)}
         >
           {showPassword ? <Eye /> : <EyeOff />}
