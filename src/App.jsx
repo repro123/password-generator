@@ -4,14 +4,16 @@ import CharacterLength from "@/components/CharacterLength";
 import CharacterOptions from "@/components/CharacterOptions";
 import StrengthDisplay from "@/components/StrengthDisplay";
 import SubmitButton from "@/components/SubmitButton";
+import PasswordOutput from "@/components/PasswordOutput";
 
-import CopyButton from "@/ui/CopyButton";
 import RightArrow from "@/ui/RightArrow";
 
 import { calculateStrengthValue } from "@/utils/calculateStrengthValue";
 import { getStrengthText } from "@/utils/getStrengthText";
 import { getStrengthBars } from "@/utils/getStrengthBars";
 import { setBarsBackground } from "@/utils/setBarsBackground";
+import { randomIndex } from "@/utils/randomIndex";
+
 import { useReducer } from "react";
 
 const initialState = {
@@ -23,6 +25,7 @@ const initialState = {
   includeSymbols: false,
   password: "",
   errorMessage: "",
+  history: JSON.parse(localStorage.getItem("history")) || [],
 };
 
 function reducer(state, action) {
@@ -64,8 +67,24 @@ function reducer(state, action) {
         errorMessage: "",
       };
 
-    case "generatePassword":
-      return { ...state, password: action.payload };
+    case "generatePassword": {
+      const newEntry = {
+        password: action.payload,
+        strength: action.strength,
+        createdAt: new Date().toISOString(),
+        characterLength: state.characterLength,
+        includeUppercase: state.includeUppercase,
+        includeLowercase: state.includeLowercase,
+        includeNumbers: state.includeNumbers,
+        includeSymbols: state.includeSymbols,
+      };
+
+      const updatedHistory = [newEntry, ...state.history];
+
+      localStorage.setItem("history", JSON.stringify(updatedHistory));
+
+      return { ...state, password: action.payload, history: updatedHistory };
+    }
 
     default:
       throw new Error("Unknown type");
@@ -83,7 +102,10 @@ function App() {
     includeSymbols,
     password,
     errorMessage,
+    history,
   } = state;
+
+  console.log("HISTORY", history);
 
   const selectedOptionsCount = [
     includeUppercase,
@@ -105,10 +127,6 @@ function App() {
     const actualValue = Math.round((percent / 100) * 50);
     e.target.style.setProperty("--progress", `${percent}%`);
     dispatch({ type: "changeLength", payload: actualValue });
-  }
-
-  function randomIndex(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
   }
 
   function generatePassword() {
@@ -140,7 +158,6 @@ function App() {
 
     return passwordArray.join("");
   }
-  const randomPassword = generatePassword();
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -161,7 +178,12 @@ function App() {
       return;
     }
 
-    dispatch({ type: "generatePassword", payload: randomPassword });
+    const randomPassword = generatePassword();
+    dispatch({
+      type: "generatePassword",
+      payload: randomPassword,
+      strength: strength,
+    });
   }
 
   const value = calculateStrengthValue(characterLength, selectedOptionsCount);
@@ -174,22 +196,11 @@ function App() {
       <Heading />
 
       <form className="mt-4 ">
-        <div className="px-8 py-4 bg-grey-800 flex items-center justify-between gap-4">
-          <input
-            className="preset-2 md:preset-1 placeholder:text-grey-700 text-grey-200"
-            type="text"
-            readOnly
-            placeholder="P4$5W0rD!"
-            value={password}
-          />
-          <div className="flex gap-2 items-center text-brand-success">
-            {isCopied && <span className="preset-4 lg:preset-3">COPIED</span>}
-            <CopyButton
-              className="text-brand-success cursor-pointer hover:text-white"
-              onCopy={() => setClipboard(password)}
-            />
-          </div>
-        </div>
+        <PasswordOutput
+          password={password}
+          isCopied={isCopied}
+          onCopy={setClipboard}
+        />
 
         <div className="px-8 py-4 mt-4 bg-grey-800 flex flex-col gap-8 preset-4 md:preset-3 text-grey-200">
           <div className="grid gap-4">
